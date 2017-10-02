@@ -1,4 +1,6 @@
 from Cell import Cell
+from tkinter import *
+import random
 
 
 class Grid:
@@ -9,6 +11,17 @@ class Grid:
         self.resolution = resolution
         if resolution != 0:
             self.screenMode = True
+            self.root = Tk()
+            self.root.title("Cellular Automata Grid")
+            self.canvas = Canvas(self.root, width=xAmt*resolution, height=yAmt*resolution)
+            self.canvas.pack()
+            self.root.update_idletasks()
+            self.drawgrid = dict()
+
+            for y in range(self.yAmt):
+                for x in range(self.xAmt):
+                    self.drawgrid[x, y] = self.canvas.create_rectangle(x*resolution, y*resolution, (x+1)*resolution, (y+1)*resolution, fill="#000000")
+
         else:
             self.screenMode = False
         self.cells = [[Cell(False) for y in range(yAmt)] for x in range(xAmt)]
@@ -30,12 +43,20 @@ class Grid:
                     self.tCells[x][y].setState(False)
                 if neighbors == 3:
                     self.tCells[x][y].setState(True)
-
         self.cells = self.copyCells(self.tCells)
 
     def show(self):
         if self.screenMode:
-            return
+            for y in range(self.yAmt):
+                for x in range(self.xAmt):
+                    if self.cells[x][y].getState():
+                        c = "#ffffff"
+                    else:
+                        c = "#000000"
+                    self.canvas.itemconfig(self.drawgrid[x, y], fill=c)
+
+            self.root.update()
+            self.root.update_idletasks()
         else:
             for y in range(self.yAmt):
                 linetext = ""
@@ -77,7 +98,6 @@ class Grid:
         return neighbors
 
     def populateGrid(self):
-
         for y in range(self.yAmt):
             for x in range(self.xAmt):
                 if (x == 4 and y == 3):
@@ -88,3 +108,20 @@ class Grid:
                     self.cells[x][y].setState(True)
                 # if (x == 4 and y == 6):
                 #     self.cells[x][y].setState(True)
+
+    def populateGridRandom(self, amt):
+        toPlace = amt
+        while toPlace > 0:
+            randX = random.randint(0, self.xAmt-1)
+            randY = random.randint(0, self.yAmt-1)
+
+            if not self.cells[randX][randY].getState():
+                self.cells[randX][randY].setState(True)
+                print(str(randX) + " " + str(randY))
+                toPlace -= 1
+
+
+
+    def halt(self):
+        if self.screenMode:
+            self.root.mainloop()

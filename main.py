@@ -6,8 +6,8 @@ import sys
 # import sklearn
 import time
 
-from Grid import Grid
 from Window import Window
+from GridManager import GridManager
 
 totalIterations = 500
 speed = .05
@@ -20,22 +20,17 @@ speed = .05
 # print("sklearn: {}".format(sklearn.__version__))
 print()
 
-g = Grid(100, 100, 5)
-w = Window(1500, 400, g)
+gridManager = GridManager(10)
+w = Window(1500, 400)
 
-# grids = [Grid(100, 100, 0) for i in range(1000)]
+# a = input("go")
 
-g.populateGridRandom(1000)
-# g.populateGrid()
-g.show()
-a = input("go")
 lastTime = time.time()
-
-iteration = 0
+iteration = 50
 while iteration < totalIterations:
-    if (time.time()-lastTime > speed):
-        g.update()
-        g.show()
+    if time.time()-lastTime > speed:
+        gridManager.updateGrids()
+        w.displayGrids(gridManager)
         iteration += 1
         lastTime = time.time()
         print(iteration)

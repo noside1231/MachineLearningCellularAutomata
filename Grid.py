@@ -111,6 +111,9 @@ class Grid:
 
     def populateGridRandom(self, amt):
         toPlace = amt
+        if toPlace > self.xAmt*self.yAmt:
+            toPlace = self.xAmt*self.yAmt
+
         while toPlace > 0:
             randX = random.randint(0, self.xAmt-1)
             randY = random.randint(0, self.yAmt-1)
@@ -120,7 +123,33 @@ class Grid:
                 print(str(randX) + " " + str(randY))
                 toPlace -= 1
 
+    def getGridInPlaintext(self):
+        plaintext = ""
+        for y in range(self.yAmt):
+            for x in range(self.xAmt):
+                if self.cells[x][y].getState():
+                    plaintext += "1 "
+                else:
+                    plaintext += "0 "
+            plaintext += "\n"
+        print(plaintext)
+        return plaintext
 
+    def setGridInPlaintext(self, plaintext):
+        l = plaintext.split()
+
+        i = 0
+        for y in range(self.yAmt):
+            for x in range(self.xAmt):
+                state = True
+                if l[i] == "0":
+                    state = False
+
+                self.cells[x][y].setState(state)
+                i += 1
+
+    def getGrid(self):
+        return self.cells
 
     def halt(self):
         if self.screenMode:

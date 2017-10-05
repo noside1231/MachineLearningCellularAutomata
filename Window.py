@@ -10,7 +10,7 @@ class Window:
         self.canvas.pack()
         self.root.update()
         self.root.update_idletasks()
-        self.gridBoxResolution = 5.4
+        self.gridBoxResolution = 15
 
 
 
@@ -25,13 +25,15 @@ class Window:
                     if curGrid[x][y].getState():
                         c = "#ffffff"
 
-                    x1 = 10+(i*self.gridBoxResolution*len(curGrid)*1.1)+x*self.gridBoxResolution
+                    x1 = 0+(i*self.gridBoxResolution*len(curGrid)*1.1)+x*self.gridBoxResolution
                     x2 = (x1+self.gridBoxResolution)
-                    y1 = 10+(y*self.gridBoxResolution)
+                    y1 = 0+(y*self.gridBoxResolution)
                     y2 = (y1+self.gridBoxResolution)
                     self.canvas.create_rectangle(x1, y1, x2, y2, fill=c)
 
         self.root.update()
         self.root.update_idletasks()
 
+    def halt(self):
+        self.root.mainloop()
 

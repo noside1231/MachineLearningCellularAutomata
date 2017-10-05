@@ -1,77 +1,56 @@
 from Cell import Cell
-from tkinter import *
 import random
 
 
 class Grid:
 
-    def __init__(self, xAmt, yAmt, resolution):
+    def __init__(self, xAmt, yAmt, gridID):
         self.xAmt = xAmt
         self.yAmt = yAmt
-        self.resolution = resolution
-        if resolution != 0:
-            self.screenMode = True
-            self.root = Tk()
-            self.root.title("Cellular Automata Grid")
-            self.canvas = Canvas(self.root, width=xAmt*resolution, height=yAmt*resolution)
-            self.canvas.pack()
-            self.root.update_idletasks()
-            self.drawgrid = dict()
-
-            for y in range(self.yAmt):
-                for x in range(self.xAmt):
-                    self.drawgrid[x, y] = self.canvas.create_rectangle(x*resolution, y*resolution, (x+1)*resolution, (y+1)*resolution, fill="#000000")
-
-        else:
-            self.screenMode = False
         self.cells = [[Cell(False) for y in range(yAmt)] for x in range(xAmt)]
         self.tCells = [[Cell(False) for y in range(yAmt)] for x in range(xAmt)]
+        self.laststateCells = [[Cell(False) for y in range(yAmt)] for x in range(xAmt)]
+
+    def getXSize(self):
+        return self.xAmt
+
+    def getYSize(self):
+        return self.yAmt
 
     def update(self):
         self.resetCells(self.tCells)
-
+        self.laststateCells = self.copyCells(self.cells)
         for y in range(self.yAmt):
             for x in range(self.xAmt):
                 neighbors = self.getNeighborAmt(self.cells, x, y)
-                # if neighbors > 0:
-                #     print(neighbors)
                 if neighbors < 2:
                     self.tCells[x][y].setState(False)
-                if neighbors == 2:
+                elif neighbors == 2:
                     self.tCells[x][y].setState(self.cells[x][y].getState())
-                if neighbors > 3:
+                elif neighbors > 3:
                     self.tCells[x][y].setState(False)
-                if neighbors == 3:
+                elif neighbors == 3:
                     self.tCells[x][y].setState(True)
         self.cells = self.copyCells(self.tCells)
 
     def show(self):
-        if self.screenMode:
-            for y in range(self.yAmt):
-                for x in range(self.xAmt):
-                    if self.cells[x][y].getState():
-                        c = "#ffffff"
-                    else:
-                        c = "#000000"
-                    self.canvas.itemconfig(self.drawgrid[x, y], fill=c)
-
-            self.root.update()
-            self.root.update_idletasks()
-        else:
-            for y in range(self.yAmt):
-                linetext = ""
-                for x in range(self.xAmt):
-                    if self.cells[x][y].getState():
-                        linetext += "1 "
-                    else:
-                        linetext += "0 "
-                print(linetext)
+        for y in range(self.yAmt):
+            linetext = ""
+            for x in range(self.xAmt):
+                if self.cells[x][y].getState():
+                    linetext += "1 "
+                else:
+                    linetext += "0 "
+            print(linetext)
         print()
 
     def resetCells(self, g):
         for y in range(self.yAmt):
                 for x in range(self.xAmt):
                     g[x][y].setState(False)
+
+    def resetGrid(self):
+        self.resetCells(self.cells)
 
     def copyCells(self, g):
         t = [[Cell(True) for y in range(self.yAmt)] for x in range(self.xAmt)]
@@ -81,9 +60,22 @@ class Grid:
                     t[x][y].setState(g[x][y].getState())
         return t
 
+    def equalsCells(self, g):
+        for y in range(self.yAmt):
+                for x in range(self.xAmt):
+                    if self.cells[x][y].getState() != g[x][y].getState():
+                        return False
+        return True
+
+    def countCells(self):
+        count = 0
+        for y in range(self.yAmt):
+            for x in range(self.xAmt):
+                count += 1
+        return count
+
     def getNeighborAmt(self, g, x, y):
         neighbors = 0
-
         for yt in range(3):
             for xt in range(3):
                 try:
@@ -91,23 +83,10 @@ class Grid:
                         neighbors += 1
                 except:
                     continue
-
         if g[x][y].getState():
             neighbors -=1
-
         return neighbors
 
-    def populateGrid(self):
-        for y in range(self.yAmt):
-            for x in range(self.xAmt):
-                if (x == 4 and y == 3):
-                    self.cells[x][y].setState(True)
-                if (x == 4 and y == 4):
-                    self.cells[x][y].setState(True)
-                if (x == 4 and y == 5):
-                    self.cells[x][y].setState(True)
-                # if (x == 4 and y == 6):
-                #     self.cells[x][y].setState(True)
 
     def populateGridRandom(self, amt):
         toPlace = amt
@@ -135,6 +114,16 @@ class Grid:
         print(plaintext)
         return plaintext
 
+    def getGridString(self):
+        plaintext = ""
+        for y in range(self.yAmt):
+            for x in range(self.xAmt):
+                if (self.cells[x][y].getState()):
+                    plaintext += "1"
+                else:
+                    plaintext += "0"
+        return plaintext
+
     def setGridInPlaintext(self, plaintext):
         l = plaintext.split()
 
@@ -151,6 +140,36 @@ class Grid:
     def getGrid(self):
         return self.cells
 
+    def setGrid(self, g):
+        self.cells = g
+
+    def generateGrid(self, ID):
+        binId = bin(ID)
+        binId = binId[2:]
+
+        preBinID = ""
+        for i in range((self.xAmt*self.yAmt)-len(binId)):
+            preBinID += "0"
+        binId = preBinID + binId
+        count = 0
+        for y in range(self.yAmt):
+            for x in range(self.xAmt):
+                a = False
+                if binId[len(binId)-count-1] == "1":
+                    a = True
+                self.cells[x][y].setState(a)
+                count += 1
+
+        return
+
+    def placeInCenter(self, g):
+        tGrid = g.getGrid()
+        offX = int((self.xAmt-g.getXSize())/2)
+        offY = int((self.yAmt-g.getYSize())/2)
+        for y in range(g.getYSize()):
+            for x in range(g.getXSize()):
+                self.cells[x+offX][y+offY].setState(tGrid[x][y].getState())
+
+
     def halt(self):
-        if self.screenMode:
-            self.root.mainloop()
+        exit(0)
